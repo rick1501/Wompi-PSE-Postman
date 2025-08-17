@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "Wompi Sandbox",
+    "description": "Colección con todos los endpoints de Wompi en sandbox",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Obtener Merchant",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/merchants/{{public_key}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "merchants",
+            "{{public_key}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let token = pm.response.json().data.presigned_acceptance.acceptance_token;",
+              "pm.environment.set(\"acceptance_token\", token);",
+              "console.log(\"Acceptance token guardado:\", token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listar Pagos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/payments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Crear Pago",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount_in_cents\": 10000,\n  \"currency\": \"COP\",\n  \"customer_email\": \"test@example.com\",\n  \"payment_method\": {\n    \"type\": \"CARD\",\n    \"token\": \"CARD_TOKEN_DE_PRUEBA\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/payments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Listar Bancos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/banks",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "banks"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Listar Cuentas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/accounts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "accounts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Pruebas PSE",
+      "item": [
+        {
+          "name": "PSE - Pago Exitoso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{private_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_in_cents\": 500000,\n  \"currency\": \"COP\",\n  \"payment_method\": {\n    \"type\": \"PSE\",\n    \"user_type\": 0,\n    \"user_legal_id_type\": \"CC\",\n    \"user_legal_id\": \"123456789\",\n    \"financial_institution_code\": \"1001\",\n    \"payment_description\": \"Pago de prueba PSE\"\n  },\n  \"customer_email\": \"test@example.com\",\n  \"reference\": \"pago-pse-prueba-001\",\n  \"acceptance_token\": \"{{acceptance_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estado de transacción es PENDING o APPROVED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect([\"PENDING\",\"APPROVED\"]).to.include(json.data.status);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PSE - Pago Rechazado por Fondos Insuficientes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{private_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_in_cents\": 999999999,\n  \"currency\": \"COP\",\n  \"payment_method\": {\n    \"type\": \"PSE\",\n    \"user_type\": 0,\n    \"user_legal_id_type\": \"CC\",\n    \"user_legal_id\": \"123456789\",\n    \"financial_institution_code\": \"1001\",\n    \"payment_description\": \"Pago de prueba PSE\"\n  },\n  \"customer_email\": \"test@example.com\",\n  \"reference\": \"pago-pse-prueba-002\",\n  \"acceptance_token\": \"{{acceptance_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estado de transacción es DECLINED\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql(\"DECLINED\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PSE - Pago sin banco (Error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{private_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount_in_cents\": 500000,\n  \"currency\": \"COP\",\n  \"payment_method\": {\n    \"type\": \"PSE\",\n    \"user_type\": 0,\n    \"user_legal_id_type\": \"CC\",\n    \"user_legal_id\": \"123456789\",\n    \"payment_description\": \"Pago de prueba PSE\"\n  },\n  \"customer_email\": \"test@example.com\",\n  \"reference\": \"pago-pse-prueba-003\",\n  \"acceptance_token\": \"{{acceptance_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code es 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje de error contiene Banco\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.error.messages.join()).to.include(\"Banco\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
